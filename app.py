@@ -1,20 +1,33 @@
 
-from dbhelpers import conn_exe_close
-from apihelpers import verify_endpoints_info, add_for_patch
-from flask import Flask, request, make_response
-import json
-import dbcreds
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+from sklearn import linear_model
 
-app = Flask(__name__)
+df = pd.read_csv("https://content.codecademy.com/programs/data-science-path/linear_regression/honeyproduction.csv")
+print(df.head())
+prod_per_year = df.groupby('year').totalprod.mean().reset_index()
+# print(prod_per_year)
 
-if(dbcreds.production_mode == True):
-    import bjoern #type: ignore
-    bjoern.run(app,'0.0.0.0',5000)
-    print('Running in PRODUCTION MODE')
-else:
-    from flask_cors import CORS
-    CORS(app)
-    print('Running in TESTING MODE')
-    app.run(debug=True)
+x = prod_per_year['year']
+# print(x)
+x = x.values.reshape(-1,1)
+y = prod_per_year['totalprod']
 
+plt.scatter(x,y)
+plt.show()
 
+regr = linear_model.LinearRegression()
+regr.fit(x,y)
+print(regr.coef_[0])
+
+y_predict = regr.predict(x)
+plt.plot(x,y_predict)
+plt.show()
+
+x_future = np.array(range(2013,2050))
+x_future = x_future.reshape(-1,1)
+
+future_predict = regr.predict(x_future)
+plt.plot(x_future,future_predict)
+plt.show()
